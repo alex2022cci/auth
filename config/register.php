@@ -1,13 +1,16 @@
 <?php
 
 // Database connection
-include('config/db.php');
+include('./config/db.php');
 // Swiftmailer lib
 require_once './lib/vendor/autoload.php';
 
 // Error & success messages
+global $captcha, $w_recaptcha;
 global $success_msg, $email_exist, $f_NameErr, $l_NameErr, $_emailErr, $_mobileErr, $_passwordErr;
 global $fNameEmptyErr, $lNameEmptyErr, $emailEmptyErr, $mobileEmptyErr, $passwordEmptyErr, $email_verify_err, $email_verify_success;
+
+
 
 // Set empty form vars for validation mapping
 $_first_name = $_last_name = $_email = $_mobile_number = $_password = "";
@@ -39,6 +42,7 @@ if(isset($_POST["submit"])) {
             $_email = mysqli_real_escape_string($connection, $email);
             $_mobile_number = mysqli_real_escape_string($connection, $mobilenumber);
             $_password = mysqli_real_escape_string($connection, $password);
+
             // perform validation
             if(!preg_match("/^[a-zA-Z ]*$/", $_first_name)) {
                 $f_NameErr = '<div class="alert alert-danger">
@@ -75,12 +79,31 @@ if(isset($_POST["submit"])) {
                 // Password hash
                 $password_hash = password_hash($password, PASSWORD_BCRYPT);
                 // Query
-                $sql = "INSERT INTO users (firstname, lastname, email, mobilenumber, password, token, is_active,
-                    date_time) VALUES ('{$firstname}', '{$lastname}', '{$email}', '{$mobilenumber}', '{$password_hash}', 
+                $sql = "INSERT INTO users (firstname, lastname, email, mobilenumber, password, token, is_active, date_time) 
+                    VALUES ('{$firstname}', '{$lastname}', '{$email}', '{$mobilenumber}', '{$password_hash}', 
                     '{$token}', '0', now())";
 
-                // Create mysql query
-                $sqlQuery = mysqli_query($connection, $sql);
+                //on veut la clé du captcha
+                $secretKey = "6LfYZs4jAAAAAGvPm3Vg874ttHboUOScoM9swsL7";  // insert google recatcha token
+
+                $ip = $_SERVER['REMOTE_ADDR'];
+                
+                // on envoie notre clé secrete
+                $url = 'https://www.google.com/recaptcha/api/siteverified'.urlencode($secretKey).'&response='.urlencode($captcha);
+                    $response = file_get_contents($url);
+                    $responseKey = json_decode($response,true);
+
+                    // retourne de mon json response key
+                        if($response['success']){
+                           // Create mysql query
+                          $sqlQuery = mysqli_query($connection, $sql);   
+                        } else {
+                            $w_recaptcha = '<div class="alert alert-danger">
+                                                Your drunked *Bender* go home !
+                                            </div>';
+                        }
+
+              
 
                 if(!$sqlQuery){
                     die("MySQL query failed!" . mysqli_error($connection));
@@ -143,6 +166,12 @@ if(isset($_POST["submit"])) {
                     Password can not be blank.
                 </div>';
         }
+        if (isset($_POST['g-recaptcha-response'])) {
+            $captcha = '<div class="alert alert-danger" role="alert">
+                          Veuillez cocher le Captcha de Google
+                        </div>';
+          }
+
     }
 }
 ?>

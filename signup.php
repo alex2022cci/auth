@@ -1,4 +1,4 @@
-<?php include('./controllers/register.php'); ?>
+<?php include('controllers/register.php'); ?>
 
 <!doctype html>
 <html lang="en">
@@ -12,11 +12,16 @@
     <!-- jQuery + Bootstrap JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+
 </head>
 
 <body>
-   
-   <?php include('./header.php'); ?>
+    
+   <?php 
+  // include('./header.php'); 
+   ?>
 
     <div class="App">
         <div class="vertical-center">
@@ -69,6 +74,14 @@
                         <?php echo $_passwordErr; ?>
                         <?php echo $passwordEmptyErr; ?>
                     </div>
+
+                    <div class="g-recaptcha" data-sitekey="6LfYZs4jAAAAADL17UKpBDTWaOEEYKYbkfCE8ZYv"></div>
+
+                    <?=$captcha;?>
+                    <?=$w_recaptcha;?>
+                 
+                
+
 
                     <button type="submit" name="submit" id="submit" class="btn btn-outline-primary btn-lg btn-block">Sign up
                     </button>
